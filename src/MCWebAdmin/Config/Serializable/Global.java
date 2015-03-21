@@ -18,11 +18,11 @@ public class Global implements Serializable{
 	public String AdminTheme = "default";
 	
 	// holds Minecraft Server Control Panel Port
-	public int ServerPort = 8081; // defailts to '8081'
+	public int InstancePort = 8081; // defailts to '8081'
 	// holds Minecraft Server Control Panel Hostname
-	public String ServerHostname = "*"; // defaults to '*' for all hostnames
+	public String InstanceHostname = "*"; // defaults to '*' for all hostnames
 	// holds the theme dir name
-	public String ServerTheme = "default";
+	public String InstanceTheme = "default";
 	
 
 	private static Global _inst;

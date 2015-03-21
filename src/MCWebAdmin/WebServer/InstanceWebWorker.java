@@ -11,14 +11,14 @@ import MCWebAdmin.Util.FileReader;
 import MCWebAdmin.Util.SupportedMimeTypes;
 import MCWebAdmin.Util.Exceptions.FileNotFound;
 
-public class AdminWebWorker extends Thread implements Runnable {
+public class InstanceWebWorker extends Thread implements Runnable {
 	private Socket soc;
 	private BufferedOutputStream bos;
 	private BufferedReader br;
 	private ServerRequest sr;
-	private String basePath = "Admin_Web/"+Global.GetInstance().AdminTheme + "/";
+	private String basePath = "Instance_Web/"+Global.GetInstance().InstanceTheme + "/";
 	
-	public AdminWebWorker(Socket socket) {
+	public InstanceWebWorker(Socket socket) {
 		soc = socket;
 		try {
 			br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
