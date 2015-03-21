@@ -22,7 +22,7 @@ public class Global implements Serializable{
 	
 
 	private static Global _inst;
-	public Global GetInstance() {
+	public static Global GetInstance() {
 		if(_inst == null){
 			_inst = new Global();
 		}
