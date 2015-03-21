@@ -1,4 +1,4 @@
-package MCWebAdmin.WebServer;
+package MCWebAdmin.Util;
 
 import java.io.BufferedInputStream;
 import java.io.File;

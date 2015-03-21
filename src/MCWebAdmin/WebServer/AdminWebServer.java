@@ -26,6 +26,7 @@ public class AdminWebServer extends WebServer {
 				try {
 					Socket socket = server.accept();
 					AdminWebWorker worker = new AdminWebWorker(socket);
+					worker.start();
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();

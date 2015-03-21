@@ -12,7 +12,9 @@ public class ServerRequest
 	  public String requestPath = "";
 	  public String hostname = "";
 	  public Map<String, String> headers = new HashMap<>();
+	  public String rawGet = "";
 	  public Map<String, String> get = new HashMap<>();
+	  public String rawPost = "";
 	  public Map<String, String> post = new HashMap<>();
 	  public Map<String, String> cookies = new HashMap<>();
 	  public BufferedOutputStream out;
@@ -23,7 +25,8 @@ public class ServerRequest
 		  	String request = "";
 			
 		  	try {
-				while (!"".equals(input = in.readLine()))
+		  		input = in.readLine();
+				while (!"".equals(input))
 				{
 					if (gotFirst)
 					{
@@ -34,6 +37,8 @@ public class ServerRequest
 						requestPage = input.split(" ")[1];
 						gotFirst = true;
 					}
+
+			  		input = in.readLine();
 				}
 				String[] requestData = request.split("\n\n", 1);
 				String headersBlock = requestData[0];
@@ -58,15 +63,13 @@ public class ServerRequest
 						currentCount++;
 					}
 				}
-				if (("/".equals(requestPage)) || ("".equals(requestPage))) {
-					requestPage = "/index.html";
-				}
 				hostname = headers.get("Host");
 				String[] QueryStringPart = requestPage.split("\\?");
 				if (QueryStringPart.length > 1)
 				{
 					requestPage = QueryStringPart[0];
-					String get = QueryStringPart[1];
+					rawGet = QueryStringPart[1];
+					String get = rawGet;
 					String[] parts = get.split("([\\?|\\&|\\;])");
 					for (String part : parts)
 					{
@@ -104,15 +107,12 @@ public class ServerRequest
 						}
 					}
 				}
-				String[] pathParts = requestPage.split("/");
-				if(pathParts.length > 1){
-					for(int i = 0; i < pathParts.length - 2; i++){
-						requestPath += pathParts[i]+"/";
-					}
-					requestPage = pathParts[pathParts.length-1];
-			  	}
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
+				
+				int p = requestPage.lastIndexOf("/");
+				requestPath = requestPage.substring(0, p)+"/";
+				requestPage = requestPage.substring(p+1);
+				rawPost = postData;
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
 	  }
