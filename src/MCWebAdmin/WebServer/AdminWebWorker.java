@@ -35,7 +35,7 @@ public class AdminWebWorker extends Thread implements Runnable {
 				WriteLine(sr.rawPost);
 				bos.flush();
 				bos.close();
-				bos.close();
+				soc.close();
 				return;
 			}else{
 				String path = basePath+sr.requestPath+sr.requestPage;
@@ -49,7 +49,7 @@ public class AdminWebWorker extends Thread implements Runnable {
 					bos.write(read, 0, read.length);
 					bos.flush();
 					bos.close();
-					bos.close();
+					soc.close();
 					return;
 				}
 				catch(FileNotFound fnf){
@@ -59,7 +59,7 @@ public class AdminWebWorker extends Thread implements Runnable {
 					WriteLine("<!DOCTYPE html><html><body><h1>404 File Not Found</h1></body></html>");
 					bos.flush();
 					bos.close();
-					bos.close();
+					soc.close();
 					return;
 				}
 				catch(Exception e){
@@ -70,11 +70,6 @@ public class AdminWebWorker extends Thread implements Runnable {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-	}
-	
-	private MCWebAdmin.Util.FileReader GetInstance() {
-		// TODO Auto-generated method stub
-		return null;
 	}
 
 	private void show500Error(){
