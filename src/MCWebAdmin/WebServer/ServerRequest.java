@@ -25,7 +25,6 @@ public class ServerRequest
 		  	try {
 				while (!"".equals(input = in.readLine()))
 				{
-					System.out.println("Read " + input);
 					if (gotFirst)
 					{
 						request = request + input + "\n";
@@ -107,10 +106,10 @@ public class ServerRequest
 				}
 				String[] pathParts = requestPage.split("/");
 				if(pathParts.length > 1){
-					for(int i = 0; i < pathParts.length - 1; i++){
+					for(int i = 0; i < pathParts.length - 2; i++){
 						requestPath += pathParts[i]+"/";
 					}
-					requestPage = pathParts[pathParts.length];
+					requestPage = pathParts[pathParts.length-1];
 			  	}
 			} catch (IOException e) {
 				// TODO Auto-generated catch block

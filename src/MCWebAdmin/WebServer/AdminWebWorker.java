@@ -17,8 +17,16 @@ public class AdminWebWorker extends Thread implements Runnable {
 		try {
 			br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 			bos = new BufferedOutputStream(socket.getOutputStream());
+			sr = new ServerRequest();
+			sr.parseInput(br);
+			
+			// are we handling a JSON RPC Request
+			if("/rpc/".equals(sr.requestPage)){
+				// yes
+			}else{
+				// no so this is a file request
+			}
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
