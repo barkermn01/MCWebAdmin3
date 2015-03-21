@@ -26,7 +26,7 @@ public class SupportedMimeTypes implements Serializable {
 			mimeTypes = new HashMap<>();
 			mimeTypes.put(".css", 	"text/css");
 			mimeTypes.put(".js", 	"text/javascript");
-			mimeTypes.put(".json", 	"text/javascript");
+			mimeTypes.put(".json", 	"application/json");
 			mimeTypes.put(".html", 	"text/html");
 			mimeTypes.put(".gif", 	"image/gif");
 			mimeTypes.put(".jpeg", 	"image/jpeg");

@@ -30,7 +30,7 @@ public class AdminWebWorker extends Thread implements Runnable {
 			if("/rpc/".equals(sr.requestPath) || "rpc".equals(sr.requestPage) && "/".equals(sr.requestPath)){
 				WriteLine("HTTP/1.0 200");
 				WriteLine("Server: MCWebAdmin/3.0.0");
-				WriteLine("Content-Type: text/plain");
+				WriteLine("Content-Type: application/json");
 				WriteLine("");
 				WriteLine(sr.rawPost);
 				bos.flush();
@@ -39,7 +39,12 @@ public class AdminWebWorker extends Thread implements Runnable {
 				return;
 			}else{
 				String path = basePath+sr.requestPath+sr.requestPage;
-				String fileExt = sr.requestPage.substring(0, sr.requestPage.lastIndexOf('.'));
+				String fileExt;
+				if(sr.requestPage.lastIndexOf('.') > 0){
+					 fileExt = sr.requestPage.substring(sr.requestPage.lastIndexOf('.'), sr.requestPage.length());
+				}else{
+					fileExt = ""; 
+				}
 				String mimeType = SupportedMimeTypes.GetInstance().getMimeType(fileExt);
 				try{
 					byte[] read = FileReader.GetInstance().readFile(path);

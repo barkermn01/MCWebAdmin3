@@ -4,13 +4,10 @@ import MCWebAdmin.WebServer.AdminWebServer;
 import MCWebAdmin.WebServer.InstanceWebServer;
 
 public class Main {
-
+	public static boolean shutdown = false;
+	
 	public static void main(String[] args)
 	{
-		AdminWebServer.GetInstance().start();
-		System.out.println("Starting Admin Web Server");
-		InstanceWebServer.GetInstance().start();
-		System.out.println("Starting Instance Web Server");
 		Runtime.getRuntime().addShutdownHook(new Thread()
 		{
 			public void run()
@@ -31,5 +28,10 @@ public class Main {
 				}
 			}
 		});
+
+		AdminWebServer.GetInstance().start();
+		System.out.println("Starting Admin Web Server");
+		InstanceWebServer.GetInstance().start();
+		System.out.println("Starting Instance Web Server");
 	}
 }
