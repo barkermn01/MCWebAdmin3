@@ -11,6 +11,13 @@ public class InstanceManager {
 	private Map<String, Server> servers;
 	private static InstanceManager _inst;
 	
+	public static InstanceManager GetInstance(){
+		if(_inst == null){
+			_inst = new InstanceManager();
+		}
+		return _inst;
+	}
+	
 	private InstanceManager(){
 		servers = new HashMap<>();
 		// load all servers
