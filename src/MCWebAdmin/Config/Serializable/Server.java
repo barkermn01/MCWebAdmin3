@@ -3,6 +3,8 @@ package MCWebAdmin.Config.Serializable;
 import java.io.Serializable;
 import java.util.HashMap;
 
+import MCWebAdmin.Config.ConfigReader;
+
 
 public class Server implements Serializable {
 
@@ -35,6 +37,32 @@ public class Server implements Serializable {
 	// holds the name of the theme to be loaded for this servers control panel
 	public String ThemeName = "terminal"; // defaults to 'terminal'
 	
+	private static HashMap<String,Server> _inst = new HashMap<>();
+	public static Server GetServerInstance(String name)
+	{
+		Server eval = null;
+		boolean cfgExists = ConfigReader.GetInstance().ConfigExists("Servers/"+name+".cfg");
+		if(!_inst.containsKey(name) && !cfgExists){
+			_inst.put(name, new Server());
+		}else if(cfgExists){
+			_inst.put(name, ConfigReader.GetInstance().Read(eval, "Server/"+name+".cgf"));
+		}
+		return _inst.get(name);
+	}
+	
+	public static void SaveAllConfigs()
+	{
+		for(Server srv : _inst.values())
+		{
+			srv.SaveConfig();
+		}
+	}
+	
+	public void SaveConfig()
+	{
+		ConfigReader.GetInstance().Write(this, "Server/"+name+".cgf");
+	}
+	
 	private Server(){
 		if(Users == null){
 			Users = new HashMap<>();
@@ -42,13 +70,4 @@ public class Server implements Serializable {
 			Users.put("Admin", "admin");
 		}
 	}
-	
-	private static Server _inst;
-	public Server GetInstance() {
-		if(_inst == null){
-			_inst = new Server();
-		}
-		return _inst;
-	}
-
 }

@@ -2,6 +2,8 @@ package MCWebAdmin.Config.Serializable;
 
 import java.io.Serializable;
 
+import MCWebAdmin.Config.ConfigReader;
+
 public class Global implements Serializable{
 	/**
 	 * 
@@ -24,11 +26,17 @@ public class Global implements Serializable{
 	// holds the theme dir name
 	public String InstanceTheme = "default";
 	
+	public void SaveConfig(){
+		ConfigReader.GetInstance().Write(this, "Global.cfg");
+	}
 
 	private static Global _inst;
 	public static Global GetInstance() {
-		if(_inst == null){
+		boolean cfgExists = ConfigReader.GetInstance().ConfigExists("Global.cfg");
+		if(_inst == null && !cfgExists){
 			_inst = new Global();
+		}else if(cfgExists){
+			_inst = ConfigReader.GetInstance().Read(_inst, "Global.cgf");
 		}
 		return _inst;
 	}

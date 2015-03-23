@@ -3,7 +3,8 @@ package MCWebAdmin.Config.Serializable;
 import java.io.Serializable;
 import java.util.HashMap;
 
-import MCWebAdmin.Util.Exceptions.ServerDoseNotExist;
+import MCWebAdmin.Config.ConfigReader;
+import MCWebAdmin.Util.Exceptions.ServerDoesNotExist;
 
 public class Servers implements Serializable {
 
@@ -14,10 +15,17 @@ public class Servers implements Serializable {
 	private Servers(){		
 	}
 	
+	public void SaveConfig(){
+		ConfigReader.GetInstance().Write(this, "Servers.cfg");
+	}
+
 	private static Servers _inst;
-	public Servers GetInstance() {
-		if(_inst == null){
+	public static Servers GetInstance() {
+		boolean cfgExists = ConfigReader.GetInstance().ConfigExists("Servers.cfg");
+		if(_inst == null && !cfgExists){
 			_inst = new Servers();
+		}else if(cfgExists){
+			_inst = ConfigReader.GetInstance().Read(_inst, "Servers.cgf");
 		}
 		return _inst;
 	}
@@ -29,11 +37,15 @@ public class Servers implements Serializable {
 		return Servers.containsKey(name);
 	}
 	
-	public String getConfigFilePath(String name) throws ServerDoseNotExist{
+	public HashMap<String, String> GetServers(){
+		return Servers;
+	}
+	
+	public String getConfigFilePath(String name) throws ServerDoesNotExist{
 		if(Servers.containsKey(name)){
 			return Servers.get(name);
 		}else{
-			throw new ServerDoseNotExist();
+			throw new ServerDoesNotExist();
 		}
 	}
 	
