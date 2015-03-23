@@ -12,10 +12,13 @@ import MCWebAdmin.WebServer.InstanceWebServer;
 
 public class Main {
 	public static boolean shutdown = false;
+	private static BufferedReader consoleIn;
 	
 	@SuppressWarnings("deprecation")
 	public static void main(String[] args)
 	{
+		consoleIn = new BufferedReader(new InputStreamReader(System.in)); 
+		
 		/* 
 		 * all custom versions of this code base need to change this header
 		 * if you charge for your version of this code base remove refund line
@@ -29,9 +32,7 @@ public class Main {
 		System.out.println("***     This software is free if you paid for it demand a refund!     ***");
 		System.out.println("***           https://github.com/barkermn01/MCWebAdmin3/              ***");
 		System.out.println("*************************************************************************");
-		
-		BufferedReader consoleIn = new BufferedReader(new InputStreamReader(System.in)); 
-		
+				
 		Runtime.getRuntime().addShutdownHook(new Thread()
 		{
 			public void run()
@@ -88,6 +89,35 @@ public class Main {
 					Global.GetInstance().SaveConfig();
 					Servers.GetInstance().SaveConfig();
 					Server.SaveAllConfigs();
+					break;
+				}
+				case "AdminPort":
+				{
+					System.out.print("Please enter new port: ");
+					try {
+						int port = Integer.parseInt(consoleIn.readLine());
+						Global.GetInstance().AdminPort = port;
+						Global.GetInstance().SaveConfig();
+						AdminWebServer.GetInstance().stop();
+						AdminWebServer.GetInstance().start();
+					} catch (NumberFormatException e) {
+						System.out.println("Port number is invalid");
+					} catch (IOException e) {
+					}
+				}
+				case "InstancePort":
+				{
+					System.out.print("Please enter new port: ");
+					try {
+						int port = Integer.parseInt(consoleIn.readLine());
+						Global.GetInstance().AdminPort = port;
+						Global.GetInstance().SaveConfig();
+						AdminWebServer.GetInstance().stop();
+						AdminWebServer.GetInstance().start();
+					} catch (NumberFormatException e) {
+						System.out.println("Port number is invalid");
+					} catch (IOException e) {
+					}
 				}
 			}
 		}
