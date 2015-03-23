@@ -54,9 +54,9 @@ public class Main {
 		});
 
 		AdminWebServer.GetInstance().start();
-		System.out.println("Starting Admin Web Server");
+		System.out.println("Starting Admin Web Server on port '"+Global.GetInstance().AdminPort+"'");
 		InstanceWebServer.GetInstance().start();
-		System.out.println("Starting Instance Web Server");
+		System.out.println("Starting Instance Web Server on port '"+Global.GetInstance().InstancePort+"'");
 		
 		while(!shutdown){
 			try {
