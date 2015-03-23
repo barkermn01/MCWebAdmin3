@@ -58,7 +58,7 @@ public class InstanceManager {
 		
 	}
 	
-	public void SendWideNotice(){
+	public void SendWideNotice(String notice){
 	
 	}
 	
