@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<script type="text/javascript" src="js/jquery.js"></script>
+		<script type="text/javascript" src="js/jquery-ui-1.10.0.custom.min.js"></script>
+		<script type="text/javascript" src="js/jQuery.form.js"></script>
+		<script type="text/javascript" src="js/script.js"></script>
+		<link rel="stylesheet" type="text/css" href="css/style.css" />
+		<link rel="stylesheet" type="text/css" href="css/smoothness/jquery-ui-1.10.0.custom.min.css" />
+	</head>
+	<body>
+		<div class="layout">
+			<div class="main">
+				<div class="console">
+					<div class="output">
+					</div>
+					<form id="consoleForm">
+					<input type="text" name="consoleInput" id="consoleInput" />
+					<input type="submit" value="" id="consoleSubmit" />
+					</form>
+				</div>
+				<div class="menu">
+					<ul>
+						<li class="player">
+							Player Control
+							<ul>
+								<li id="player_banlist">Show Ban List</li>
+								<li class="seperator"></li>
+								<li id="player_tell">Send Message</li>
+								<li id="player_tp">Teleport</li>
+								<li id="player_gamemode">Game Mode</li>
+								<li class="seperator"></li>
+								<li id="player_ban">Ban</li>
+								<li id="player_kick">Kick</li>
+								<li id="player_kill">Kill</li>
+								<li id="player_pardon">Pardon</li>
+								<li class="seperator"></li>
+								<li id="player_give">Give</li>
+								<li id="player_xp" >Give XP</li>
+								<li class="seperator"></li>
+								<li id="player_deop">Remove Operator Status</li>
+								<li id="player_op">Give Operator Status</li>
+							</ul>
+						</li>
+						<li class="server">
+							Server Control
+							<ul>
+								<li id="server_help">Help</li>
+								<li id="server_plugins">List Plugins</li>
+								<li id="server_version">Show Version</li>
+								<li class="seperator"></li>
+								<li id="server_say">Broadcast</li>
+								<li class="seperator"></li>
+								<li id="server_save">Save</li>
+								<li id="server_saveon">Auto Save On</li>
+								<li id="server_saveoff">Auto Save Off</li>
+								<li class="seperator"></li>
+								<li id="server_reload">Reload Config</li>
+								<li id="server_rain">Toggle Rain</li>
+								<li class="seperator"></li>
+								<li id="server_ban">Ban IP</li>
+								<li id="server_pardon">Pardon IP</li>
+							</ul>
+						</li>
+						<li class="webService">
+							Web Service
+							<ul>
+								<li id="web_list">List Users</li>
+								<li class="seperator"></li>
+								<li id="web_add">Add Users</li>
+								<li id="web_del">Remove Users</li>
+								<li class="seperator"></li>
+								<li id="web_restart">Restart Server</li>
+								<li id="web_clear">Clear Logs</li>
+							</ul>
+						</li>
+					</ul>
+					<div class="clear"></div>
+				</div>	
+			</div>
+			<div class="playerList">
+			<h2>Current Players</h2>
+			</div>
+		</div>
+		<div class="login">
+			<div class="status">Please Login</div>
+			<form id="loginForm" method="post">
+				Username: <input type="text" name="username" id="loginUsername" /><br />
+				Password: <input type="password" name="password" id="loginPassword" /><br />
+				<input type="submit" value="Login to Server Admin" />
+			</form>
+		</div>
+		<div id="dialog" title="Web Service Message">
+		</div>
+		<div id="addUserDialog"  title="Create Web Service User">
+			<form id="addUserForm">
+				<div class="status">
+					Please Enter Details
+				</div>
+				<div class="addForm">
+					Username:<input type="text" name="username" id="addUsername" /><br />
+					Password:<input type="password" name="password" id="addPassword" /><br />
+					<input type="submit" value="Create User" />
+				</div>
+			</form>
+		</div>
+		<div id="delUserDialog" title="Delete Web Service User">
+			<form id="delUserForm">
+				<div class="status">
+					Please Enter Details
+				</div>
+				<div class="delForm">
+					Username:<select id="delUsername"></select><br />
+					<input type="submit" value="Delete User" />
+				</div>
+			</form>
+		</div>
+		<div id="sendMsgDialog" title="Message a Player">
+			<form id="sendMsgForm">
+				<div class="status">
+					Please Enter Details
+				</div>
+				Player: {PlayerList}<br />
+				Message: <input type="text" name="msgSendMessage" id="msgSendMessage" /><br />
+				<input type="submit" value="Send Message" />
+			</form>
+		</div>
+		<div id="basicCommandDialog" title="Perform Player Task">
+			<form id="basicCommandForm">
+				Player: {PlayerList}<br />
+				<input type="hidden" name="cmd" id="basicCommandCmd" value="" />
+				<input type="submit" value="Perform Command" />
+			</form>
+		</div>
+		<div id="ipDialog" title="Perform IP Task">
+			<form id="ipDialogForm">
+				IP Address: <input type="text" name="ipDialogIP" id="ipDialogIP" /><br />
+				<input type="hidden" name="cmd" id="ipDialogCmd" value="" />
+				<input type="submit" value="IP Command" />
+			</form>
+		</div>
+		<div id="broadcastDialog" title="broadcast a Message">
+			<form id="broadcastForm">
+				Message: <input type="text" name="broadcastMSG" id="broadcastMSG" /><br />
+				<input type="submit" value="Broadcast" />
+			</form>
+		</div>
+		<div id="xpDialog" title="Give Player XP">
+			<form id="xpForm">
+				Player: {PlayerList}<br />
+				XP to Give: <input type="text" name="xpAmount" id="xpAmount" /><br />
+				<input type="submit" value="Give XP" />
+			</form>
+		</div>
+		<div id="giveDialog" title="Give Player Item">
+			<form id="giveForm">
+				Player: {PlayerList}<br />
+				Item Number: <input type="text" name="giveItem" id="giveItem" />
+				<input type="submit" value="Give Item" /><br />
+			</form>
+		</div>
+		<div id="gameModeDialog" title="Alter Player GameMode">
+			<form id="gameModeForm">
+				Player: {PlayerList}<br />
+				GameMode: <select name="gameModeMode" id="gameModeMode">
+					<option value="0">Survival</option>
+					<option value="1">Creative</option>
+					<option value="2">Adventure</option>
+					<option value="3">Hardcore</option>
+				</select><br />
+				<input type="submit" value="Set Gamemode" />
+			</form>
+		</div>
+		<div id="teleportDialog" title="Teleport Player">
+			<form id="teleportForm">
+				Player: {PlayerList}<br />
+				To Who: {WhoList}<br />
+				<input type="hidden" id="teleportRemoved" name="teleportRemoved" value="" />
+				<input type="submit" value="Teleport Player" />
+			</form>
+		</div>
+		<div id="pardonDialog" title="Pardon a Player">
+			<form id="pardonForm">
+				Player: {PardonList}<br />
+				<input type="submit" value="Pardon Player" />
+			</form>
+		</div>
+		<div id="restartDialog" title="Server Restarting">
+		</div>
+	</body>
+</html>
