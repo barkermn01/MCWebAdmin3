@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
+import MCWebAdmin.Config.Serializable.Backups;
 import MCWebAdmin.Config.Serializable.Global;
 import MCWebAdmin.Config.Serializable.Server;
 import MCWebAdmin.Config.Serializable.Servers;
@@ -89,6 +90,7 @@ public class Main {
 					Global.GetInstance().SaveConfig();
 					Servers.GetInstance().SaveConfig();
 					Server.SaveAllConfigs();
+					Backups.getInstance().SaveConfig();
 					break;
 				}
 				case "AdminPort":

@@ -1,0 +1,162 @@
+package MCWebAdmin.Instance;
+
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.util.ArrayList;
+
+import MCWebAdmin.Config.Serializable.Server;
+
+public class Instance extends Thread {
+	private Process proc;
+	private ArrayList<String> players;
+	private int StreamStart = -1, StreamCurrnt = 0;
+	private String[] outputStream;
+	private Server server;
+	private BufferedWriter out;
+	private BufferedReader in;
+	private boolean shuttingDown = false;
+	
+	public Instance(Server serv){
+		server = serv;
+		players = new ArrayList<>();
+		outputStream = new String[512];
+		if(server.AutoStart){
+			super.start();
+		}
+	}
+	
+	public void run(){		
+		Start();
+	}
+		
+	public void Start()
+	{
+		try{
+			System.out.println("Starting Instance '"+server.name+"' ");
+			ProcessBuilder procBuild = new ProcessBuilder(new String[] { 
+				server.JavaPath, 
+				"-Xmx" + server.MemoryMin, 
+				"-Xms" + server.MemoryMax, 
+				"-jar",
+				server.baseDir + server.jarName,
+				"nogui", 
+				"-nojline", 
+				"2>&1" 
+			});
+			procBuild.redirectErrorStream(true);
+			this.proc = procBuild.start();
+	
+			in = new BufferedReader(new InputStreamReader(this.proc.getInputStream()));
+			out = new BufferedWriter(new OutputStreamWriter(this.proc.getOutputStream()));
+			String line = "";
+			while ((line = in.readLine()) != null)
+			{
+				AddToStream(line);
+			}
+			if(line == null && !shuttingDown && server.AutoRestart){
+				InstanceManager.GetInstance().RestartInstance(server.name);
+			}
+		}catch(Exception e)
+		{
+			
+		}
+	}
+	
+	private void CheckForPlayerJoined(String line, String[] parts)
+	{
+		for(int i = 0; i < parts.length; i++){
+			if("joined".equals(parts[i])){
+				int startLoc = line.indexOf(parts[i-1]);
+				int endLoc = line.indexOf(parts[i]);
+				players.add(line.substring(startLoc, endLoc).trim());
+			}
+		}
+	}
+	
+	private void CheckForPlayerLeft(String line, String[] parts)
+	{
+		for(int i = 0; i < parts.length; i++){
+			if("left".equals(parts[i])){
+				int startLoc = line.indexOf(parts[i-1]);
+				int endLoc = line.indexOf(parts[i]);
+				players.remove(line.substring(startLoc, endLoc).trim());
+			}
+		}
+	}
+	
+	private void AddToStream(String line)
+	{
+		String[] parts = line.split(" ");
+		CheckForPlayerJoined(line, parts);
+		CheckForPlayerLeft(line, parts);
+		if(StreamCurrnt < outputStream.length)
+		{
+			outputStream[StreamCurrnt] = line; 
+			StreamCurrnt++;
+		}else{
+			StreamStart++;
+			if(StreamStart > outputStream.length){
+				StreamStart = 0;
+			}
+			outputStream[StreamStart] = line;
+		}
+	}
+	
+	public String[] GetStream()
+	{
+		String[] ret = new String[outputStream.length];
+		int max = StreamCurrnt;
+		for(int i = 0; i < max; i++)
+		{
+			if(StreamStart < 0)
+			{
+				ret[i] = outputStream[i];
+			}else{
+				int textPos = i + StreamStart;
+				if(textPos > outputStream.length) textPos -= outputStream.length;
+				ret[i] = outputStream[textPos]; 
+			}
+		}
+		return ret;
+	}
+	
+	public String[] GetPlayers()
+	{
+		String[] plays = new String[players.size()];
+		plays = players.toArray(plays);
+		return plays;
+	}
+	
+	@SuppressWarnings("deprecation")
+	public void Stop()
+	{
+		shuttingDown = true;
+		System.out.println("Stopping instance: "+server.name);
+		proc.destroy();
+		super.stop();
+	}
+	
+	public boolean isRunning()
+	{
+		return proc.isAlive();
+	}
+	
+	public void Restart()
+	{
+		proc.destroy();
+		start();
+	}
+	
+	public void sendInput(String input)
+	{
+		try
+		{
+			input = input.trim() + "\r\n";
+			out.write(input, 0, input.length());
+			out.flush();
+		}
+		catch (Exception ex) {}
+	}
+}

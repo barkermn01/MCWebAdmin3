@@ -19,11 +19,14 @@ public class Server implements Serializable {
 	// holds the servers name
 	public String name = "Default"; // Defaults to 'Default'
 	
-	// holds the path to the server jar to run
-	public String path = "Tekkit.jar"; // Defaults to 'Tekkit.jar'
+	// holds the path to copy files from
+	public String serverOriginPath = "minecraft_1.8.3";
+	
+	// holds the name of the jar file to load the server from
+	public String jarName = "minecraft_server.1.8.3.jar"; // Defaults to 'native.jar'
 	
 	// holds the directory to run the server from for unique users
-	public String baseDir = "./"; // Defaults to './'
+	public String baseDir = ""; // Defaults to Global + serverName
 	
 	// holds the -Xms value for this server
 	public String MemoryMin = "256M"; // Defaults to '256M'
@@ -36,6 +39,15 @@ public class Server implements Serializable {
 	
 	// holds the name of the theme to be loaded for this servers control panel
 	public String ThemeName = "terminal"; // defaults to 'terminal'
+	
+	// holds the auto start information should this server start when MCWebAdmin starts?
+	public boolean AutoStart = false;
+	
+	// holds if the server should auto restart on a crash
+	public boolean AutoRestart = true;
+	
+	// holds the servers port
+	public int Port = 52168;
 	
 	private static HashMap<String,Server> _inst = new HashMap<>();
 	public static Server GetServerInstance(String name)
@@ -63,7 +75,12 @@ public class Server implements Serializable {
 		ConfigReader.GetInstance().Write(this, "Server/"+name+".cgf");
 	}
 	
+	public void loadServerFiles(){
+		
+	}
+	
 	private Server(){
+		baseDir = Global.GetInstance().InstancesPath+name+"/";
 		if(Users == null){
 			Users = new HashMap<>();
 			// if this is a new server add admin support

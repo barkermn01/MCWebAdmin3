@@ -25,6 +25,10 @@ public class Global implements Serializable{
 	public String InstanceHostname = "*"; // defaults to '*' for all hostnames
 	// holds the theme dir name
 	public String InstanceTheme = "default";
+	// holds the dir where all servers should be saved
+	public String InstancesPath = "Instances/";
+	// holds the backups dir
+	public String InstanceBackupPath = "Instances/Backups/";
 	
 	public void SaveConfig(){
 		ConfigReader.GetInstance().Write(this, "Global.cfg");

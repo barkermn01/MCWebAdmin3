@@ -49,5 +49,14 @@ public class Servers implements Serializable {
 		}
 	}
 	
+	public void AddServer(String serverName)
+	{
+		String path = "Config/Servers/"+serverName+".cfg.bin";
+		Servers.put(serverName, path);
+	}
 	
+	public void RemoveServer(String serverName)
+	{
+		Servers.remove(serverName);
+	}
 }
