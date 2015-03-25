@@ -17,6 +17,7 @@ import MCWebAdmin.Config.Serializable.Global;
 import MCWebAdmin.Config.Serializable.Server;
 import MCWebAdmin.Instance.InstanceManager;
 import MCWebAdmin.Util.Exceptions.ServerDoesNotExist;
+import MCWebAdmin.Util.Exceptions.ServerIsNotRunning;
 import MCWebAdmin.Util.Exceptions.ServerIsRunning;
 
 public class Backup {
@@ -27,9 +28,21 @@ public class Backup {
 		backupName = backup;
 	}
 	
+	public Backup(String filename){
+		String[] file = filename.split("_");
+		serverName = file[0];
+		backupName = file[1];
+		created = file[2];
+	}
+	
 	public String GetPath()
 	{
-		return Global.GetInstance().InstanceBackupPath+serverName+"_"+backupName+".zip";
+		return Global.GetInstance().InstanceBackupPath+serverName+"_"+backupName+"_"+created+".zip";
+	}
+	
+	public String GetName()
+	{
+		return serverName+"_"+backupName+"_"+created;
 	}
 	
 	private void addDir(File dirObj, ZipOutputStream out) throws IOException {
@@ -41,9 +54,12 @@ public class Backup {
 	        addDir(files[i], out);
 	        continue;
 	      }
+	      String DirPathToExclude = (System.getProperty("user.dir")+"/"+
+	    		  Global.GetInstance().InstancesPath+
+	    		  Server.GetServerInstance(serverName).name+"/").replace("/", "\\");
 	      FileInputStream in = new FileInputStream(files[i].getAbsolutePath());
-	      System.out.println(" Adding: " + files[i].getAbsolutePath());
-	      out.putNextEntry(new ZipEntry(files[i].getAbsolutePath()));
+	      String zipPath = files[i].getAbsolutePath().replace(DirPathToExclude, "");
+	      out.putNextEntry(new ZipEntry(zipPath));
 	      int len;
 	      while ((len = in.read(tmpBuf)) > 0) {
 	        out.write(tmpBuf, 0, len);
@@ -55,32 +71,38 @@ public class Backup {
 	
 	public void Create()
 	{
-		DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+		DateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
 		Date date = new Date();
 		created = dateFormat.format(date);
 		String dir = Global.GetInstance().InstancesPath+Server.GetServerInstance(serverName).name+"/";
 		File dirObj = new File(dir);
 		ZipOutputStream out;
+		File f = new File(GetPath().replace(GetName()+".zip", ""));
+		f.mkdirs();
 		try {
 			out = new ZipOutputStream(new FileOutputStream(GetPath()));
 		    addDir(dirObj, out);
 		    out.close();
 		    Backups.getInstance().AddBackup(this);
+		    System.out.println("Created backup '"+GetPath()+"'");
 		} catch (Exception e) {
+			System.out.println("Failed to create backup '"+GetPath()+"'");
 		}
+		
 	}
 	
 	public void Delete()
 	{
 		File f = new File(GetPath());
 		f.delete();
-	    Backups.getInstance().RemoveBackup(this);
 	}
 	
 	public void Restore()
 	{
 		try {
-			InstanceManager.GetInstance().StopInstance(serverName);
+			if(InstanceManager.GetInstance().isInstanceRunning(serverName)){
+				InstanceManager.GetInstance().StopInstance(serverName);
+			}
 			InstanceManager.GetInstance().UninstallFiles(serverName);
 		} catch (ServerDoesNotExist | ServerIsRunning e) {
 		}

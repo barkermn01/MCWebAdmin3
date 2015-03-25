@@ -3,23 +3,33 @@ package MCWebAdmin;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.Map;
+import java.util.Set;
 
+import MCWebAdmin.Config.Backup;
 import MCWebAdmin.Config.Serializable.Backups;
 import MCWebAdmin.Config.Serializable.Global;
 import MCWebAdmin.Config.Serializable.Server;
 import MCWebAdmin.Config.Serializable.Servers;
+import MCWebAdmin.Instance.InstanceManager;
+import MCWebAdmin.Util.CommandHelper;
+import MCWebAdmin.Util.Exceptions.ServerDoesNotExist;
+import MCWebAdmin.Util.Exceptions.ServerIsNotRunning;
+import MCWebAdmin.Util.Exceptions.ServerIsRunning;
+import MCWebAdmin.Util.Exceptions.ServerNameInUse;
 import MCWebAdmin.WebServer.AdminWebServer;
 import MCWebAdmin.WebServer.InstanceWebServer;
 
 public class Main {
 	public static boolean shutdown = false;
 	private static BufferedReader consoleIn;
+	private static CommandHelper commandHelper;
 	
 	@SuppressWarnings("deprecation")
 	public static void main(String[] args)
 	{
 		consoleIn = new BufferedReader(new InputStreamReader(System.in)); 
-		
+		commandHelper = new CommandHelper(consoleIn);
 		/* 
 		 * all custom versions of this code base need to change this header
 		 * if you charge for your version of this code base remove refund line
@@ -38,6 +48,7 @@ public class Main {
 		{
 			public void run()
 			{
+				InstanceManager.GetInstance().StopAllInstances();
 				System.out.println("Shutting Down!");
 				if(AdminWebServer.GetInstance().isAlive()){
 					// Deprecated should be updated to be a safe kill
@@ -62,6 +73,7 @@ public class Main {
 		
 		while(!shutdown){
 			try {
+				System.out.print(">");
 				String cmd = consoleIn.readLine();
 				handleCommand(cmd);
 			} catch (IOException e) {
@@ -73,53 +85,86 @@ public class Main {
 		AdminWebServer.GetInstance().stop();
 		// Deprecated should be updated to be a safe kill
 		InstanceWebServer.GetInstance().stop();
+
+		InstanceManager.GetInstance().ForceStopAllInstances();
 		System.exit(0);
 	}
 	
 	private static void handleCommand(String cmd){
 		if(cmd != null){
-			switch(cmd){
+			switch(cmd.toLowerCase()){
 				case "exit":
 				case "shutdown":
 				{
-					shutdown = true;
+					shutdown = commandHelper.exit();
+					
 					break;
 				}
-				case "SaveConfig":
+				case "save":
+				case "saveconfig":
 				{
-					Global.GetInstance().SaveConfig();
-					Servers.GetInstance().SaveConfig();
-					Server.SaveAllConfigs();
-					Backups.getInstance().SaveConfig();
+					commandHelper.saveConfig();
 					break;
 				}
-				case "AdminPort":
+				case "adminport":
 				{
-					System.out.print("Please enter new port: ");
-					try {
-						int port = Integer.parseInt(consoleIn.readLine());
-						Global.GetInstance().AdminPort = port;
-						Global.GetInstance().SaveConfig();
-						AdminWebServer.GetInstance().stop();
-						AdminWebServer.GetInstance().start();
-					} catch (NumberFormatException e) {
-						System.out.println("Port number is invalid");
-					} catch (IOException e) {
-					}
+					commandHelper.adminPort();
+					break;
 				}
-				case "InstancePort":
+				case "instanceport":
 				{
-					System.out.print("Please enter new port: ");
-					try {
-						int port = Integer.parseInt(consoleIn.readLine());
-						Global.GetInstance().AdminPort = port;
-						Global.GetInstance().SaveConfig();
-						AdminWebServer.GetInstance().stop();
-						AdminWebServer.GetInstance().start();
-					} catch (NumberFormatException e) {
-						System.out.println("Port number is invalid");
-					} catch (IOException e) {
-					}
+					commandHelper.instancePort();
+					break;
+				}
+				case "create":
+				{
+					commandHelper.create();
+					break;
+				}
+				case "start":
+				{
+					commandHelper.start();
+					break;
+				}
+				case "stop":
+				{
+					commandHelper.stop();
+					break;
+				}
+				case "restart":
+				{
+					commandHelper.restart();
+					break;
+				}
+				case "delete":
+				{
+					commandHelper.delete();
+					break;
+				}
+				case "backup":
+				{
+					commandHelper.backup();
+					break;
+				}
+				case "listbackups":
+				{
+					commandHelper.listBackups();
+					break;
+				}
+				case "listinstances":
+				{
+					commandHelper.listInstances();
+					break;
+				}
+				case "restore":
+				{
+					commandHelper.restore();
+					break;
+				}
+				case "help":
+				{
+					commandHelper.help();
+					break;
 				}
 			}
 		}

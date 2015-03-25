@@ -2,6 +2,7 @@ package MCWebAdmin.Instance;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
@@ -11,18 +12,19 @@ import MCWebAdmin.Config.Serializable.Server;
 public class Instance extends Thread {
 	private Process proc;
 	private ArrayList<String> players;
-	private int StreamStart = -1, StreamCurrnt = 0;
+	private int StreamStart = -1; 
+	public int StreamCurrnt = 0;
 	private String[] outputStream;
-	private Server server;
+	private String server;
 	private BufferedWriter out;
 	private BufferedReader in;
 	private boolean shuttingDown = false;
 	
 	public Instance(Server serv){
-		server = serv;
+		server = serv.name;
 		players = new ArrayList<>();
 		outputStream = new String[512];
-		if(server.AutoStart){
+		if(Server.GetServerInstance(server).AutoStart){
 			super.start();
 		}
 	}
@@ -34,29 +36,29 @@ public class Instance extends Thread {
 	public void Start()
 	{
 		try{
-			System.out.println("Starting Instance '"+server.name+"' ");
 			ProcessBuilder procBuild = new ProcessBuilder(new String[] { 
-				server.JavaPath, 
-				"-Xmx" + server.MemoryMin, 
-				"-Xms" + server.MemoryMax, 
+				Server.GetServerInstance(server).JavaPath, 
+				"-Xmx" + Server.GetServerInstance(server).MemoryMax, 
+				"-Xms" + Server.GetServerInstance(server).MemoryMin, 
 				"-jar",
-				server.baseDir + server.jarName,
+				Server.GetServerInstance(server).jarName,
 				"nogui", 
 				"-nojline", 
 				"2>&1" 
 			});
+			procBuild.directory(new File(Server.GetServerInstance(server).getBaseDir()));
 			procBuild.redirectErrorStream(true);
 			this.proc = procBuild.start();
 	
 			in = new BufferedReader(new InputStreamReader(this.proc.getInputStream()));
 			out = new BufferedWriter(new OutputStreamWriter(this.proc.getOutputStream()));
 			String line = "";
-			while ((line = in.readLine()) != null)
+			while ((line = in.readLine()) != null && !shuttingDown)
 			{
 				AddToStream(line);
 			}
-			if(line == null && !shuttingDown && server.AutoRestart){
-				InstanceManager.GetInstance().RestartInstance(server.name);
+			if(line == null && !shuttingDown && Server.GetServerInstance(server).AutoRestart){
+				InstanceManager.GetInstance().RestartInstance(Server.GetServerInstance(server).name);
 			}
 		}catch(Exception e)
 		{
@@ -93,15 +95,15 @@ public class Instance extends Thread {
 		CheckForPlayerLeft(line, parts);
 		if(StreamCurrnt < outputStream.length)
 		{
-			outputStream[StreamCurrnt] = line; 
-			StreamCurrnt++;
+			outputStream[StreamCurrnt] = line;
 		}else{
 			StreamStart++;
 			if(StreamStart > outputStream.length){
 				StreamStart = 0;
 			}
 			outputStream[StreamStart] = line;
-		}
+		} 
+		StreamCurrnt++;
 	}
 	
 	public String[] GetStream()
@@ -129,18 +131,19 @@ public class Instance extends Thread {
 		return plays;
 	}
 	
-	@SuppressWarnings("deprecation")
 	public void Stop()
 	{
 		shuttingDown = true;
-		System.out.println("Stopping instance: "+server.name);
+		System.out.println("Stopping instance: "+Server.GetServerInstance(server).name);
 		proc.destroy();
-		super.stop();
 	}
 	
 	public boolean isRunning()
 	{
-		return proc.isAlive();
+		if(proc != null){
+			return proc.isAlive();
+		}
+		return false;
 	}
 	
 	public void Restart()
@@ -158,5 +161,12 @@ public class Instance extends Thread {
 			out.flush();
 		}
 		catch (Exception ex) {}
+	}
+	
+	public void ForceStop()
+	{
+		if(proc.isAlive()){
+			proc.destroyForcibly();
+		}
 	}
 }

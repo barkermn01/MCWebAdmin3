@@ -26,7 +26,7 @@ public class Server implements Serializable {
 	public String jarName = "minecraft_server.1.8.3.jar"; // Defaults to 'native.jar'
 	
 	// holds the directory to run the server from for unique users
-	public String baseDir = ""; // Defaults to Global + serverName
+	private String baseDir = ""; // Defaults to Global + serverName
 	
 	// holds the -Xms value for this server
 	public String MemoryMin = "256M"; // Defaults to '256M'
@@ -49,15 +49,20 @@ public class Server implements Serializable {
 	// holds the servers port
 	public int Port = 52168;
 	
+	public String getBaseDir(){
+		baseDir = Global.GetInstance().InstancesPath+name+"/"+serverOriginPath+"/";
+		return baseDir;
+	}
+	
 	private static HashMap<String,Server> _inst = new HashMap<>();
 	public static Server GetServerInstance(String name)
 	{
 		Server eval = null;
-		boolean cfgExists = ConfigReader.GetInstance().ConfigExists("Servers/"+name+".cfg");
+		boolean cfgExists = ConfigReader.GetInstance().ConfigExists("Instances/"+name+".cfg");
 		if(!_inst.containsKey(name) && !cfgExists){
 			_inst.put(name, new Server());
 		}else if(cfgExists){
-			_inst.put(name, ConfigReader.GetInstance().Read(eval, "Server/"+name+".cgf"));
+			_inst.put(name, ConfigReader.GetInstance().Read(eval, "Instances/"+name+".cfg"));
 		}
 		return _inst.get(name);
 	}
@@ -72,7 +77,7 @@ public class Server implements Serializable {
 	
 	public void SaveConfig()
 	{
-		ConfigReader.GetInstance().Write(this, "Server/"+name+".cgf");
+		ConfigReader.GetInstance().Write(this, "Instances/"+name+".cfg");
 	}
 	
 	public void loadServerFiles(){

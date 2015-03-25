@@ -24,18 +24,20 @@ public class ConfigReader {
 	{
 		String path = basePath+filename+".bin";
 		try
-	      {
-	         FileOutputStream fileOut =
-	         new FileOutputStream(path);
-	         ObjectOutputStream out = new ObjectOutputStream(fileOut);
-	         out.writeObject(in);
-	         out.close();
-	         fileOut.close();
-	         System.out.println("Saved config file '"+path+"'");
-	      }catch(IOException i)
-	      {
-	          System.out.println("Failed to create config file '"+path+"'");
-	      }
+		{	
+			File f = new File(path);
+			f.mkdirs();
+			FileOutputStream fileOut =
+			new FileOutputStream(path);
+			ObjectOutputStream out = new ObjectOutputStream(fileOut);
+			out.writeObject(in);
+			out.close();
+			fileOut.close();
+			System.out.println("Saved config file '"+path+"'");
+		}catch(IOException i)
+		{
+			System.out.println("Failed to create config file '"+path+"'");
+		}
 	}
 	
 	public boolean ConfigExists(String filename)

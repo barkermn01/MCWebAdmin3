@@ -8,11 +8,16 @@ import MCWebAdmin.Util.Exceptions.ServerDoesNotExist;
 
 public class Servers implements Serializable {
 
+	
+	// holds server name and the path to there config files
+	private HashMap<String, String> Servers;
+	
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
 	private Servers(){		
+		Servers = new HashMap<>();
 	}
 	
 	public void SaveConfig(){
@@ -25,13 +30,10 @@ public class Servers implements Serializable {
 		if(_inst == null && !cfgExists){
 			_inst = new Servers();
 		}else if(cfgExists){
-			_inst = ConfigReader.GetInstance().Read(_inst, "Servers.cgf");
+			_inst = ConfigReader.GetInstance().Read(_inst, "Servers.cfg");
 		}
 		return _inst;
 	}
-	
-	// holds server name and the path to there config files
-	private HashMap<String, String> Servers;
 	
 	public boolean ServerExists(String name){
 		return Servers.containsKey(name);

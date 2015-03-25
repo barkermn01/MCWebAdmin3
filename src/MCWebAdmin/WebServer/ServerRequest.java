@@ -33,8 +33,10 @@ public class ServerRequest
 					}
 					else
 					{
+						try{
 						requestPage = input.split(" ")[1];
 						gotFirst = true;
+						}catch(Exception e){}
 					}
 
 			  		input = in.readLine();

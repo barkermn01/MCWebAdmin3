@@ -1,7 +1,9 @@
 package MCWebAdmin.Config.Serializable;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 
 import MCWebAdmin.Config.Backup;
 import MCWebAdmin.Config.ConfigReader;
@@ -11,13 +13,12 @@ public class Backups implements Serializable {
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	private HashMap<Integer, Backup> backups;
-	private int backupIndex = 0;
+	private ArrayList<String> backups;
 	private static Backups _inst;
 	
 	private Backups()
 	{
-		backups = new HashMap<>();
+		backups = new ArrayList<>();
 	}
 	
 	public static Backups getInstance()
@@ -26,7 +27,7 @@ public class Backups implements Serializable {
 		if(_inst == null && !cfgExists){
 			_inst = new Backups();
 		}else if(cfgExists){
-			_inst = ConfigReader.GetInstance().Read(_inst, "Backups.cgf");
+			_inst = ConfigReader.GetInstance().Read(_inst, "Backups.cfg");
 		}
 		return _inst;
 	}
@@ -37,18 +38,15 @@ public class Backups implements Serializable {
 	
 	public void AddBackup(Backup bk)
 	{
-		backups.put(backupIndex, bk);
-		backupIndex++;
-		SaveConfig();
+		backups.add(bk.GetName());
 	}
 	
 	public void RemoveBackup(Backup bk)
 	{
-		backups.remove(bk);
-		SaveConfig();
+		backups.remove(bk.GetName());
 	}
 	
-	public HashMap<Integer, Backup> GetBackups()
+	public ArrayList<String> GetBackups()
 	{
 		return backups;
 	}

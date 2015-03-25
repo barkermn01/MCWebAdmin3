@@ -2,6 +2,7 @@ package MCWebAdmin.Instance;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -33,8 +34,10 @@ public class InstanceManager {
 	{
 		servers = new HashMap<>();
 		// load all servers
-		for(String srvKey : Servers.GetInstance().GetServers().keySet()){
-			servers.put(srvKey, new Instance(Server.GetServerInstance(srvKey)));
+		if(Servers.GetInstance().GetServers().size() > 0){
+			for(String srvKey : Servers.GetInstance().GetServers().keySet()){
+				servers.put(srvKey, new Instance(Server.GetServerInstance(srvKey)));
+			}
 		}
 	}
 	
@@ -91,8 +94,9 @@ public class InstanceManager {
 		if(Servers.GetInstance().ServerExists(name)){
 			throw new ServerNameInUse(name);
 		}
-		Server.GetServerInstance(name);
+		Server.GetServerInstance(name).name = name;
 		Servers.GetInstance().AddServer(name);
+		servers.put(name, new Instance(Server.GetServerInstance(name)));
 	}
 	
 	public void RemoveInstance(String name) throws ServerDoesNotExist, ServerIsRunning
@@ -106,12 +110,15 @@ public class InstanceManager {
 		Servers.GetInstance().RemoveServer(name);
 	}
 	
+	@SuppressWarnings("deprecation")
 	public void StopInstance(String name) throws ServerDoesNotExist
 	{
 		if(!servers.containsKey(name)){
 			throw new ServerDoesNotExist();
 		}
 		servers.get(name).Stop();
+		servers.remove(name);
+		servers.put(name, new Instance(Server.GetServerInstance(name)));		
 	}
 	
 	public void StartInstance(String name) throws ServerDoesNotExist, ServerIsRunning
@@ -119,7 +126,7 @@ public class InstanceManager {
 		if(!servers.containsKey(name)){
 			throw new ServerDoesNotExist();
 		}
-		if(servers.get(name).isRunning()){
+		if(servers.get(name).isRunning() || servers.get(name).isAlive()){
 			throw new ServerIsRunning(name);
 		}
 		if(!CheckForInstall(name)){
@@ -129,15 +136,39 @@ public class InstanceManager {
 		
 	}
 	
-	public void RestartInstance(String name) throws ServerDoesNotExist, ServerIsNotRunning
+	public void StopAllInstances()
+	{
+		for(Instance i : servers.values())
+		{
+			i.Stop();
+		}
+	}
+	
+	public void ForceStopAllInstances()
+	{
+		for(Instance i : servers.values())
+		{
+			i.ForceStop();
+		}
+	}
+	
+	public void RestartInstance(String name) throws ServerDoesNotExist
 	{
 		if(!servers.containsKey(name)){
 			throw new ServerDoesNotExist();
 		}
-		if(!servers.get(name).isRunning()){
-			throw new ServerIsNotRunning(name);
+		if(servers.get(name).isRunning()){
+			StopInstance(name);
 		}
-		servers.get(name).Restart();
+		try {
+			StartInstance(name);
+		} catch (ServerIsRunning e) {
+		}
+	}
+	
+	public boolean isInstanceRunning(String name)
+	{
+		return servers.get(name).isRunning();
 	}
 	
 	public void SendInstanceNotice(String name, String notice) throws ServerDoesNotExist, ServerIsNotRunning
@@ -167,18 +198,30 @@ public class InstanceManager {
 		bk.Create();
 	}
 	
-	public void RestoreInstance(int backupId) throws ServerDoesNotExist
+	public void RestoreInstance(String backupName) throws ServerDoesNotExist
 	{
-		((HashMap<Integer, Backup>)Backups.getInstance().GetBackups()).get(backupId).Restore();
+		Backup bk = new Backup(backupName);
+		bk.Restore();
 	}
 	
-	public void DeleteBackup(int backupId) throws ServerDoesNotExist
+	public void DeleteBackup(String backupName) throws ServerDoesNotExist
 	{
-		((HashMap<Integer, Backup>)Backups.getInstance().GetBackups()).get(backupId).Delete();
+		Backup bk = new Backup(backupName);
+		bk.Delete();
 	}
 	
 	public String[] GetInstancePlayers(String name)
 	{
 		return servers.get(name).GetPlayers();
+	}
+	
+	public String[] GetStream(String name)
+	{
+		return servers.get(name).GetStream();
+	}
+	
+	public int GetStreamCount(String name)
+	{
+		return servers.get(name).StreamCurrnt;
 	}
 }

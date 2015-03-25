@@ -40,7 +40,7 @@ public class Global implements Serializable{
 		if(_inst == null && !cfgExists){
 			_inst = new Global();
 		}else if(cfgExists){
-			_inst = ConfigReader.GetInstance().Read(_inst, "Global.cgf");
+			_inst = ConfigReader.GetInstance().Read(_inst, "Global.cfg");
 		}
 		return _inst;
 	}
