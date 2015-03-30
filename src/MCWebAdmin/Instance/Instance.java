@@ -134,8 +134,10 @@ public class Instance extends Thread {
 	public void Stop()
 	{
 		shuttingDown = true;
-		System.out.println("Stopping instance: "+Server.GetServerInstance(server).name);
-		proc.destroy();
+		if(proc != null){
+			proc.destroy();
+			System.out.println("Stopping instance: "+Server.GetServerInstance(server).name);
+		}
 	}
 	
 	public boolean isRunning()
@@ -165,7 +167,7 @@ public class Instance extends Thread {
 	
 	public void ForceStop()
 	{
-		if(proc.isAlive()){
+		if(proc != null && proc.isAlive()){
 			proc.destroyForcibly();
 		}
 	}

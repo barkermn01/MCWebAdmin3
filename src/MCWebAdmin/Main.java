@@ -166,6 +166,11 @@ public class Main {
 					commandHelper.help();
 					break;
 				}
+				case "instance":
+				{
+					commandHelper.instance();
+					break;
+				}
 			}
 		}
 	}

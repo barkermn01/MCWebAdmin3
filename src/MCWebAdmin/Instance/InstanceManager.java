@@ -1,10 +1,13 @@
 package MCWebAdmin.Instance;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 
 import org.apache.commons.io.FileUtils;
 
@@ -13,10 +16,12 @@ import MCWebAdmin.Config.Serializable.Backups;
 import MCWebAdmin.Config.Serializable.Global;
 import MCWebAdmin.Config.Serializable.Server;
 import MCWebAdmin.Config.Serializable.Servers;
+import MCWebAdmin.Util.Exceptions.PortInUse;
 import MCWebAdmin.Util.Exceptions.ServerDoesNotExist;
 import MCWebAdmin.Util.Exceptions.ServerIsNotRunning;
 import MCWebAdmin.Util.Exceptions.ServerIsRunning;
 import MCWebAdmin.Util.Exceptions.ServerNameInUse;
+import MCWebAdmin.WebServer.AdminWebServer;
 
 public class InstanceManager {
 	private Map<String, Instance> servers;
@@ -48,10 +53,13 @@ public class InstanceManager {
 			copyTo.mkdirs();
 		}
 		try {
+			Properties properties = new Properties();
+			Integer port = Server.GetServerInstance(name).Port;
 			FileUtils.copyDirectoryToDirectory(copyFrom, copyTo);
+			properties.load(new FileInputStream(Server.GetServerInstance(name).getBaseDir()+"server.properties"));
+			properties.setProperty("server-port", port.toString());
+			properties.store(new FileOutputStream(Server.GetServerInstance(name).getBaseDir()+"server.properties"), null);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		}
 	}
 	
@@ -97,6 +105,10 @@ public class InstanceManager {
 		Server.GetServerInstance(name).name = name;
 		Servers.GetInstance().AddServer(name);
 		servers.put(name, new Instance(Server.GetServerInstance(name)));
+
+		if(!CheckForInstall(name)){
+			InstallFiles(name);
+		}
 	}
 	
 	public void RemoveInstance(String name) throws ServerDoesNotExist, ServerIsRunning
@@ -128,9 +140,6 @@ public class InstanceManager {
 		}
 		if(servers.get(name).isRunning() || servers.get(name).isAlive()){
 			throw new ServerIsRunning(name);
-		}
-		if(!CheckForInstall(name)){
-			InstallFiles(name);
 		}
 		servers.get(name).start();
 		
@@ -223,5 +232,41 @@ public class InstanceManager {
 	public int GetStreamCount(String name)
 	{
 		return servers.get(name).StreamCurrnt;
+	}
+	
+	public boolean doesServerExsit(String name)
+	{
+		return servers.containsKey(name);
+	}
+
+
+	public void ChangePort(String name, Integer port) throws PortInUse {
+		if(!CheckPortIsFree(port)){
+			throw new PortInUse(port);
+		}
+		Server.GetServerInstance(name).Port = port;
+		Properties properties = new Properties();
+		try {
+			properties.load(new FileInputStream(Server.GetServerInstance(name).getBaseDir()+"server.properties"));
+			properties.setProperty("server-port", port.toString());
+			properties.store(new FileOutputStream(Server.GetServerInstance(name).getBaseDir()+"server.properties"), null);
+		} catch (IOException e) {
+		}
+	}
+	
+	public boolean CheckPortIsFree(int port){
+		if(Global.GetInstance().AdminPort == port){
+			return false;
+		}
+		if(Global.GetInstance().InstancePort == port){
+			return false;
+		}
+		
+		for(String name : servers.keySet()){
+			if(Server.GetServerInstance(name).Port == port){
+				return false;
+			}
+		}
+		return true;
 	}
 }

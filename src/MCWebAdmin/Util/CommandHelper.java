@@ -1,6 +1,7 @@
 package MCWebAdmin.Util;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Set;
@@ -10,10 +11,12 @@ import MCWebAdmin.Config.Serializable.Global;
 import MCWebAdmin.Config.Serializable.Server;
 import MCWebAdmin.Config.Serializable.Servers;
 import MCWebAdmin.Instance.InstanceManager;
+import MCWebAdmin.Util.Exceptions.PortInUse;
 import MCWebAdmin.Util.Exceptions.ServerDoesNotExist;
 import MCWebAdmin.Util.Exceptions.ServerIsRunning;
 import MCWebAdmin.Util.Exceptions.ServerNameInUse;
 import MCWebAdmin.WebServer.AdminWebServer;
+import MCWebAdmin.WebServer.InstanceWebServer;
 
 public class CommandHelper {
 	private BufferedReader consoleIn;
@@ -22,30 +25,30 @@ public class CommandHelper {
 		consoleIn = in;
 	}
 	
-	public boolean exit(){
-		try {
+	private boolean confirm(){
+		try{
 			boolean test = false;
-			System.out.print("Are you sure you want to exit settings are not saved automaticly [Y/N]:");
 			String sure = consoleIn.readLine();
 			if(sure.toLowerCase().equals("y") || sure.toLowerCase().equals("n"))
 			{
 				test = true;
 			}
 			while(!test){
-				sure = consoleIn.readLine();
 				System.out.print("Response can only be [Y/N]:");
+				sure = consoleIn.readLine();
 				if(sure.toLowerCase().equals("y") || sure.toLowerCase().equals("n"))
 				{
 					test = true;
 				}
 			}
-			return sure.toLowerCase().equals("y");
-			
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+			return test;
+		}catch(IOException e){}
 		return false;
+	}
+	
+	public boolean exit(){
+		System.out.print("Are you sure you want to exit settings are not saved automaticly [Y/N]:");
+		return confirm();
 	}
 	
 	public void help()
@@ -72,7 +75,10 @@ public class CommandHelper {
 		System.out.print("Please enter backup filename: ");
 		try {
 			String bkName = consoleIn.readLine();
-			InstanceManager.GetInstance().RestoreInstance(bkName);
+			System.out.print("Are you sure you want to restore this will stop instance[Y/N]: ");
+			if(confirm()){
+				InstanceManager.GetInstance().RestoreInstance(bkName);
+			}
 		} catch (NumberFormatException e) {
 			System.out.println("Port number is invalid");
 		} catch (ServerDoesNotExist e) {
@@ -126,7 +132,10 @@ public class CommandHelper {
 		String name;
 		try {
 			name = consoleIn.readLine();
-			InstanceManager.GetInstance().RemoveInstance(name);
+			System.out.print("Are you sure you want to delete this instance[Y/N]: ");
+			if(confirm()){
+				InstanceManager.GetInstance().RemoveInstance(name);
+			}
 		} catch (IOException e) {
 		} catch (ServerDoesNotExist e) {
 			System.out.println("Instance does not exist");
@@ -140,8 +149,10 @@ public class CommandHelper {
 		System.out.print("Please enter instance name: ");
 		String name;
 		try {
-			name = consoleIn.readLine();
-			InstanceManager.GetInstance().RestartInstance(name);;
+			name = consoleIn.readLine();System.out.print("Are you sure you want to restart this instance[Y/N]: ");
+			if(confirm()){
+				InstanceManager.GetInstance().RestartInstance(name);
+			}
 		} catch (IOException e) {
 		} catch (ServerDoesNotExist e) {
 			System.out.println("Instance does not exist");
@@ -154,7 +165,10 @@ public class CommandHelper {
 		String name;
 		try {
 			name = consoleIn.readLine();
-			InstanceManager.GetInstance().StopInstance(name);;
+			System.out.print("Are you sure you want to stop this instance[Y/N]: ");
+			if(confirm()){
+				InstanceManager.GetInstance().StopInstance(name);
+			}
 		} catch (IOException e) {
 		} catch (ServerDoesNotExist e) {
 			System.out.println("Instance does not exist");
@@ -196,10 +210,16 @@ public class CommandHelper {
 		System.out.print("Please enter new port: ");
 		try {
 			int port = Integer.parseInt(consoleIn.readLine());
-			Global.GetInstance().AdminPort = port;
-			Global.GetInstance().SaveConfig();
-			AdminWebServer.GetInstance().stop();
-			AdminWebServer.GetInstance().start();
+			if(!InstanceManager.GetInstance().CheckPortIsFree(port)){
+				System.out.println("Port is in use!");
+				return;
+			}
+			System.out.print("are you sure this will disconnect anyone connected to the service[Y/N]: ");
+			if(confirm()){
+				Global.GetInstance().InstancePort = port;
+				InstanceWebServer.GetInstance().stop();
+				InstanceWebServer.GetInstance().start();
+			}
 		} catch (NumberFormatException e) {
 			System.out.println("Port number is invalid");
 		} catch (IOException e) {
@@ -212,19 +232,183 @@ public class CommandHelper {
 		System.out.print("Please enter new port: ");
 		try {
 			int port = Integer.parseInt(consoleIn.readLine());
-			Global.GetInstance().AdminPort = port;
-			Global.GetInstance().SaveConfig();
-			AdminWebServer.GetInstance().stop();
-			AdminWebServer.GetInstance().start();
+			if(!InstanceManager.GetInstance().CheckPortIsFree(port)){
+				System.out.println("Port is in use!");
+				return;
+			}
+			System.out.print("are you sure this will disconnect anyone connected to the service[Y/N]: ");
+			if(confirm()){
+				Global.GetInstance().AdminPort = port;
+				AdminWebServer.GetInstance().stop();
+				AdminWebServer.GetInstance().start();
+			}
 		} catch (NumberFormatException e) {
 			System.out.println("Port number is invalid");
 		} catch (IOException e) {
 		}
 	}
 	
+	public void instance()
+	{
+		System.out.print("Please enter instance name: ");
+		String name;
+		try {
+			name = consoleIn.readLine();
+			if(!InstanceManager.GetInstance().doesServerExsit(name))
+			{
+				System.out.println("Server dose not exist");
+			}
+			boolean exit = false;
+			while(!exit){
+				try {
+					System.out.print(name+"#");
+					String cmd = consoleIn.readLine();
+					switch(cmd){
+						case "exit":{
+							exit = true;
+							break;
+						}
+						case "stop":{
+							try {
+								InstanceManager.GetInstance().StopInstance(name);
+							} catch (ServerDoesNotExist e) { }
+							break;
+						}
+						case "start":{
+							try {
+								InstanceManager.GetInstance().StartInstance(name);
+							} catch (ServerDoesNotExist | ServerIsRunning e) { }
+							break;
+						}
+						case "restart":
+						{
+							try {
+								InstanceManager.GetInstance().RestartInstance(name);
+							} catch (ServerDoesNotExist e) {
+							}
+							break;
+						}
+						case "max-memory":
+						{
+							if(InstanceManager.GetInstance().isInstanceRunning(name)){
+								System.out.println("Server is running please stop it first!");
+								return;
+							}
+							System.out.println("Memory sizes must be in java param form E.G");
+							System.out.println("100 MB of Memory is 100M");
+							System.out.println("1 GB of Memory is 1G");
+							System.out.print("Enter new Maximum Memory Size: ");
+							Server.GetServerInstance(name).MemoryMax = consoleIn.readLine();
+							break;
+						}
+
+						case "min-memory":
+						{
+							if(InstanceManager.GetInstance().isInstanceRunning(name)){
+								System.out.println("Server is running please stop it first!");
+								return;
+							}
+							System.out.println("Memory sizes must be in java param form E.G");
+							System.out.println("100 MB of Memory is 100M");
+							System.out.println("1 GB of Memory is 1G");
+							System.out.print("Enter new Minimum Memory Size: ");
+							Server.GetServerInstance(name).MemoryMin = consoleIn.readLine();
+							break;
+						}
+						case "port":
+						{
+							inst_port(name);
+							break;
+						}
+						case "type":{
+							inst_type(name);
+							break;
+						}
+					}
+				} catch (IOException e) {
+				}
+			}
+		} catch (IOException e) {
+			
+		}
+	}
+	
+	public void inst_port(String name) throws IOException {
+		if(InstanceManager.GetInstance().isInstanceRunning(name)){
+			System.out.println("Server is running please stop it first!");
+			return;
+		}
+		System.out.print("Are you sure this will mean users will have to change information to connect [Y/N]:");
+		if(confirm()){
+			System.out.print("Please enter new port:");
+			String in = consoleIn.readLine();
+			try{
+				int port = Integer.parseInt(in);
+				InstanceManager.GetInstance().ChangePort(name, port);
+			}catch(NumberFormatException e){
+				System.out.println("port number can only be numerical");
+			}catch(PortInUse e){
+				System.out.println("port is used by another instance or MCWebAdmin web servers");
+			}
+		}		
+	}
+
+	public void inst_type(String name)
+	{
+		try{
+			if(InstanceManager.GetInstance().isInstanceRunning(name)){
+				System.out.println("Server is running please stop it first!");
+				return;
+			}
+			System.out.print("Changing type will delete all data on instance are you sure [Y/N]: ");
+			if(confirm()){
+				System.out.print("Please enter new server type: ");
+				String serverType = consoleIn.readLine();
+				System.out.print("Please enter new server version: ");
+				String serverVer = consoleIn.readLine();
+				String serverPath = serverType+"_"+serverVer+"/";
+				System.out.println("checking for server files at path "+serverPath);
+				if(new File("servers/"+serverPath).exists()){
+					System.out.print("please enter name of server jar file: ");
+					String serverJar = consoleIn.readLine();
+					if(serverJar.lastIndexOf('.') != -1){
+						String extTest = serverJar.substring(serverJar.lastIndexOf('.'), serverJar.length());
+						if(!extTest.equals(".jar")){
+							serverJar += ".jar";
+						}
+					}else{
+						serverJar += ".jar";
+					}
+					System.out.println("Checking for server jar: servers/"+serverPath+serverJar);
+					if(new File("servers/"+serverPath+serverJar).exists()){
+						Server.GetServerInstance(name).serverOriginPath = serverPath;
+						Server.GetServerInstance(name).jarName = serverJar;
+						System.out.println("Server config changed");
+						try {
+							InstanceManager.GetInstance().UninstallFiles(name);
+						} catch (ServerDoesNotExist | ServerIsRunning e) {
+						}
+						return;
+					}else{
+						System.out.println("Server jar not found");
+						System.out.println("Changing type Aborted!");
+						return;
+					}
+				}else{
+					System.out.println("Server files not found");
+					System.out.println("Changing type Aborted!");
+					return;
+				}
+			}
+			System.out.println("Changing type Aborted!");
+			return;
+		}catch(IOException e){
+			
+		}
+	}
+	
 	public void saveConfig()
 	{
-
 		Global.GetInstance().SaveConfig();
 		Servers.GetInstance().SaveConfig();
 		Server.SaveAllConfigs();
