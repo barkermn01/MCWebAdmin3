@@ -67,6 +67,7 @@ public class CommandHelper {
 		System.out.println("ListBackups		- List all the backups saved");
 		System.out.println("ListInstances		- Lists all the instances current created");
 		System.out.println("Restore			- Restores a instance from a backup");
+		System.out.println("Instance			- Allows Instance Commands");
 		System.out.println("Help			- Shows this help information");
 	}
 	
@@ -262,7 +263,7 @@ public class CommandHelper {
 			while(!exit){
 				try {
 					System.out.print(name+"#");
-					String cmd = consoleIn.readLine();
+					String cmd = consoleIn.readLine().toLowerCase();
 					switch(cmd){
 						case "exit":{
 							exit = true;
@@ -324,6 +325,10 @@ public class CommandHelper {
 							inst_type(name);
 							break;
 						}
+						case "help":{
+							inst_help();
+							break;
+						}
 					}
 				} catch (IOException e) {
 				}
@@ -351,6 +356,17 @@ public class CommandHelper {
 				System.out.println("port is used by another instance or MCWebAdmin web servers");
 			}
 		}		
+	}
+	
+	public void inst_help(){
+		System.out.println("Help text - this is the list of commands you can use!  ");
+		System.out.println("Shutdown|Exit		- exits the instance control");
+		System.out.println("Port			- change the port of this instance");
+		System.out.println("Start			- Start a created instance");
+		System.out.println("Stop			- Stop a started instance");
+		System.out.println("Restart			- Restart a started instance");
+		System.out.println("Max-Memory			- Sets the maximum memory instance can use");
+		System.out.println("Min-Memory			- Sets the minimum memory instance can use");
 	}
 
 	public void inst_type(String name)
