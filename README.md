@@ -1,5 +1,8 @@
-MCWebAdmin3
+MCWebAdmin3 - DEPRICATED
 ===========
+
+THIS PROJECT HAS BEEN DEPRICATED PLEASE USE THE NEW ONE 
+https://github.com/barkermn01/MinecraftSM
 
 MCWebAdmin the Free Minecraft Server Management Suit 
 This allows server owners to run multiple Minecraft Game Servers from a single server
